@@ -423,8 +423,8 @@ defmodule Ecto.Adapters.SQLite3 do
     else
       db_path |> Path.dirname() |> File.mkdir_p!()
       {:ok, db} = Exqlite.Sqlite3.open(db_path)
-      :ok = Exqlite.Sqlite3.execute(db, "PRAGMA JOURNAL_MODE = #{journal_mode}")
       :ok = storage_up_process_key(db, key)
+      :ok = Exqlite.Sqlite3.execute(db, "PRAGMA JOURNAL_MODE = #{journal_mode}")
       :ok = Exqlite.Sqlite3.close(db)
     end
   end
