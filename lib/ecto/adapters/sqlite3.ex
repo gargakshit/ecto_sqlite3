@@ -13,6 +13,8 @@ defmodule Ecto.Adapters.SQLite3 do
 
     * `:database` - The path to the database. In memory is allowed. You can use
       `:memory` or `":memory:"` to designate that.
+    * `:key` - Encryption key for the database. Empty key means that the
+      database won't be encrypted.
     * `:journal_mode` - Sets the journal mode for the sqlite connection. Can be
       one of the following `:delete`, `:truncate`, `:persist`, `:memory`,
       `:wal`, or `:off`. Defaults to `:wal`.
@@ -189,7 +191,8 @@ defmodule Ecto.Adapters.SQLite3 do
   def storage_up(options) do
     storage_up_with_path(
       Keyword.get(options, :database),
-      Keyword.get(options, :journal_mode, :wal)
+      Keyword.get(options, :journal_mode, :wal),
+      Keyword.get(options, :key, nil)
     )
   end
 
@@ -402,7 +405,7 @@ defmodule Ecto.Adapters.SQLite3 do
   ## HELPERS
   ##
 
-  defp storage_up_with_path(nil, _) do
+  defp storage_up_with_path(nil, _, _) do
     raise ArgumentError,
           """
           No SQLite database path specified. Please check the configuration for your Repo.
@@ -414,15 +417,23 @@ defmodule Ecto.Adapters.SQLite3 do
           """
   end
 
-  defp storage_up_with_path(db_path, journal_mode) do
+  defp storage_up_with_path(db_path, journal_mode, key) do
     if File.exists?(db_path) do
       {:error, :already_up}
     else
       db_path |> Path.dirname() |> File.mkdir_p!()
       {:ok, db} = Exqlite.Sqlite3.open(db_path)
       :ok = Exqlite.Sqlite3.execute(db, "PRAGMA JOURNAL_MODE = #{journal_mode}")
+      :ok = storage_up_process_key(db, key)
       :ok = Exqlite.Sqlite3.close(db)
     end
+  end
+
+  # In case of an empty key, do not run the `PRAGMA` statement (unencrypted)
+  defp storage_up_process_key(db, nil), do: :ok
+
+  defp storage_up_process_key(db, key) do
+    Exqlite.Sqlite3.execute(db, "PRAGMA key = #{key}")
   end
 
   defp dump_versions(config) do

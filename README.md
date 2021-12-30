@@ -7,6 +7,9 @@
 An Ecto SQLite3 Adapter. Uses [Exqlite](https://github.com/elixir-sqlite/exqlite)
 as the driver to communicate with sqlite3.
 
+This fork uses https://github.com/gargakshit/exqlite for encryption support.
+This is for internal use.
+
 ## Caveats and limitations
 
 See [Limitations](https://hexdocs.pm/ecto_sqlite3/Ecto.Adapters.SQLite3.html#module-limitations-and-caveats)
