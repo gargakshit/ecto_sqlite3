@@ -430,7 +430,7 @@ defmodule Ecto.Adapters.SQLite3 do
   end
 
   # In case of an empty key, do not run the `PRAGMA` statement (unencrypted)
-  defp storage_up_process_key(db, nil), do: :ok
+  defp storage_up_process_key(_db, nil), do: :ok
 
   defp storage_up_process_key(db, key) do
     Exqlite.Sqlite3.execute(db, "PRAGMA key = #{key}")
